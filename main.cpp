@@ -15,7 +15,7 @@ static void diegui(const char msg[]) {
 
 static void loadpng(const char name[], u8 **outdata, u32 *w, u32 *h) {
 
-	FILE *f = fopen(name, "r");
+	FILE *f = fopen(name, "rb");
 	if (!f)
 		die("Can't open file\n");
 
