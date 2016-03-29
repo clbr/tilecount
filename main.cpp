@@ -126,7 +126,10 @@ int main(int argc, char **argv) {
 			sum++;
 	}
 
-	printf("sum %u\n", sum);
+	fl_message("%u tiles.\n\n"
+		"NES: aim for < 192.\n"
+		"Genesis: aim for < 512.\n",
+		sum);
 
 	free(tilemap);
 	return retval;
