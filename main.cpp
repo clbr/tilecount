@@ -1,6 +1,12 @@
 #include <png.h>
 #include <FL/fl_ask.H>
+
+#include <algorithm>
+#include <vector>
+
 #include "common.h"
+
+using namespace std;
 
 static void diegui(const char msg[]) {
 	fl_alert(msg);
@@ -32,7 +38,7 @@ static void loadpng(const char name[], u8 **outdata, u32 *w, u32 *h) {
 	const u8 depth = png_get_bit_depth(png_ptr, info);
 
 	if (imgw % 8 != 0 || imgh % 8 != 0)
-		diegui("Image is not divisible by 8");
+		diegui("Error: Image is not divisible by 8!");
 
 	if (type != PNG_COLOR_TYPE_RGB)
 		die("Input must be a paletted PNG, got %u\n", type);
@@ -62,6 +68,14 @@ static void loadpng(const char name[], u8 **outdata, u32 *w, u32 *h) {
 
 struct tile_t {
 	u8 data[64*3];
+
+	bool operator <(const tile_t &other) const {
+		return memcmp(data, other.data, 64*3) < 0;
+	}
+
+	bool operator ==(const tile_t &other) const {
+		return memcmp(data, other.data, 64*3) == 0;
+	}
 };
 
 int main(int argc, char **argv) {
@@ -79,7 +93,8 @@ int main(int argc, char **argv) {
 
 	// Preprocess the tilemap into an easy-to-search format.
 	const u32 numtiles = tilew * tileh / 64;
-	struct tile_t *tiles = (tile_t *) calloc(numtiles, sizeof(struct tile_t));
+	vector<tile_t> tiles;
+	tiles.resize(numtiles);
 
 	u32 i;
 	for (i = 0; i < numtiles; i++) {
@@ -103,7 +118,16 @@ int main(int argc, char **argv) {
 		if (pix != 64) die("BUG, pix %u\n", pix);
 	}
 
+	sort(tiles.begin(), tiles.end());
+
+	u32 sum = 1;
+	for (i = 1; i < numtiles; i++) {
+		if (!(tiles[i - 1] == tiles[i]))
+			sum++;
+	}
+
+	printf("sum %u\n", sum);
+
 	free(tilemap);
-	free(tiles);
 	return retval;
 }
