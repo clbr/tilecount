@@ -1,5 +1,6 @@
 #include <png.h>
 #include <FL/fl_ask.H>
+#include <FL/Fl_File_Chooser.H>
 
 #include <algorithm>
 #include <vector>
@@ -81,15 +82,22 @@ struct tile_t {
 int main(int argc, char **argv) {
 
 	u8 retval = 0;
+	const char *name;
+
+	Fl_File_Icon::load_system_icons();
 
 	if (argc < 2) {
-		die("Usage: %s image.png\n", argv[0]);
+		name = fl_file_chooser("Select PNG to count", "*.png", "", 1);
+		if (!name)
+			die("Usage: %s image.png\n", argv[0]);
+	} else {
+		name = argv[1];
 	}
 
 	u8 *tilemap;
 	u32 tilew, tileh, x, y;
 
-	loadpng(argv[1], &tilemap, &tilew, &tileh);
+	loadpng(name, &tilemap, &tilew, &tileh);
 
 	// Preprocess the tilemap into an easy-to-search format.
 	const u32 numtiles = tilew * tileh / 64;

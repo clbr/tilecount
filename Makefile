@@ -8,7 +8,7 @@ CXXFLAGS += -Wall -Wextra -g
 LDFLAGS += -Wl,-gc-sections -lpng
 
 CXXFLAGS += $(shell $(FLTKCONFIG) --cxxflags)
-LDFLAGS += $(shell $(FLTKCONFIG) --ldflags)
+LDFLAGS += $(shell $(FLTKCONFIG) --ldflags --use-images)
 
 src = $(wildcard *.cpp)
 obj = $(src:.cpp=.o)
