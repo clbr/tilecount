@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <vector>
+#include <set>
 
 #include "common.h"
 
@@ -79,6 +80,24 @@ struct tile_t {
 	}
 };
 
+static void horzflip(const struct tile_t &src, struct tile_t &dst) {
+	u8 i, x;
+	for (i = 0; i < 8; i++) {
+		for (x = 0; x < 8; x++) {
+			dst.data[i * 8 * 3 + x * 3 + 0] = src.data[i * 8 * 3 + (7 - x) * 3 + 0];
+			dst.data[i * 8 * 3 + x * 3 + 1] = src.data[i * 8 * 3 + (7 - x) * 3 + 1];
+			dst.data[i * 8 * 3 + x * 3 + 2] = src.data[i * 8 * 3 + (7 - x) * 3 + 2];
+		}
+	}
+}
+
+static void vertflip(const struct tile_t &src, struct tile_t &dst) {
+	u8 i;
+	for (i = 0; i < 8; i++) {
+		memcpy(&dst.data[(7 - i) * 8 * 3], &src.data[i * 8 * 3], 8 * 3);
+	}
+}
+
 int main(int argc, char **argv) {
 
 	u8 retval = 0;
@@ -101,7 +120,7 @@ int main(int argc, char **argv) {
 
 	// Preprocess the tilemap into an easy-to-search format.
 	const u32 numtiles = tilew * tileh / 64;
-	vector<tile_t> tiles;
+	vector<tile_t> tiles, uniques;
 	tiles.resize(numtiles);
 
 	u32 i;
@@ -128,16 +147,45 @@ int main(int argc, char **argv) {
 
 	sort(tiles.begin(), tiles.end());
 
+	set<tile_t> normal, fliph, flipv, flipvh;
+	uniques.push_back(tiles[0]);
+
 	u32 sum = 1;
 	for (i = 1; i < numtiles; i++) {
-		if (!(tiles[i - 1] == tiles[i]))
+		if (!(tiles[i - 1] == tiles[i])) {
 			sum++;
+			uniques.push_back(tiles[i]);
+		}
 	}
 
-	fl_message("%u tiles.\n\n"
+	u32 flippedsum = 0;
+	const u32 uniqsize = uniques.size();
+	for (i = 0; i < uniqsize; i++) {
+		// Is it in any existing vec?
+		if (normal.count(uniques[i]) ||
+			fliph.count(uniques[i]) ||
+			flipv.count(uniques[i]) ||
+			flipvh.count(uniques[i])) {
+			continue;
+		}
+
+		tile_t hflipped, vflipped, hvflipped;
+		horzflip(uniques[i], hflipped);
+		vertflip(uniques[i], vflipped);
+		vertflip(hflipped, hvflipped);
+
+		normal.insert(uniques[i]);
+		fliph.insert(hflipped);
+		flipv.insert(vflipped);
+		flipvh.insert(hvflipped);
+
+		flippedsum++;
+	}
+
+	fl_message("%u tiles (%u if flips allowed).\n\n"
 		"NES: aim for < 192.\n"
 		"Genesis: aim for < 512.\n",
-		sum);
+		sum, flippedsum);
 
 	free(tilemap);
 	return retval;
