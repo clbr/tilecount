@@ -143,19 +143,16 @@ int main(int argc, char **argv) {
 
 		y *= 8;
 
-		const u32 endx = x + 8;
 		const u32 endy = y + 8;
 		const u32 starty = y;
 
 		u8 pix = 0;
-		for (; x < endx; x++) {
-			for (y = starty; y < endy; y++) {
-				memcpy(tiles[i].data + pix * 3,
-					tilemap + y * tilew * 3 + x * 3, 3);
-				pix++;
-			}
+		for (y = starty; y < endy; y++) {
+			memcpy(tiles[i].data + pix * 3 * 8,
+				tilemap + y * tilew * 3 + x * 3, 3 * 8);
+			pix++;
 		}
-		if (pix != 64) die("BUG, pix %u\n", pix);
+		if (pix != 8) die("BUG, pix %u\n", pix);
 	}
 
 	sort(tiles.begin(), tiles.end());
