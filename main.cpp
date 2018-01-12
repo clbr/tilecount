@@ -98,6 +98,19 @@ static void vertflip(const struct tile_t &src, struct tile_t &dst) {
 	}
 }
 
+static void printtile(const tile_t &t) {
+	u8 y, x;
+	for (y = 0; y < 8; y++) {
+		for (x = 0; x < 8; x++) {
+			printf("%02x%02x%02x ",
+				t.data[y * 8 * 3 + x * 3 + 0],
+				t.data[y * 8 * 3 + x * 3 + 1],
+				t.data[y * 8 * 3 + x * 3 + 2]);
+		}
+		puts("");
+	}
+}
+
 int main(int argc, char **argv) {
 
 	u8 retval = 0;
